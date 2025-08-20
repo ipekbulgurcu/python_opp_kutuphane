@@ -1,10 +1,11 @@
 # 📚 Python OOP Kütüphane Uygulaması
 
 Bu proje, **Python ile Nesne Yönelimli Programlama (OOP)** mantığı kullanılarak geliştirilmiş, basit ve işlevsel bir **kütüphane yönetim uygulamasıdır**. Uygulama, hem terminal üzerinden (CLI) hem de **FastAPI tabanlı bir REST API** üzerinden kullanılabilir. Ek olarak, kullanıcı dostu bir **HTML arayüzü** ve **Pytest ile yazılmış kapsamlı testler** içermektedir.
+
+-----
 \<br\>
 \<img width="2875" height="1403" alt="ui_library" src="https://github.com/user-attachments/assets/2d836a40-3588-4d93-8229-4dd843b8b2de" />
 \<br\>
------
 
 ## 🚀 Özellikler
 
