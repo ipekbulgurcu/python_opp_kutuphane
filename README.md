@@ -7,9 +7,10 @@ Bu proje, **Python ile Nesne Yönelimli Programlama** mantığını kullanarak h
 ## 🚀 Özellikler
 - 📖 Kitap ekleme, listeleme ve silme işlemleri  
 - 📂 JSON dosyası üzerinden kalıcı veri saklama  
-- 🌐 FastAPI tabanlı REST API ve Swagger UI desteği  
+- 🌐 FastAPI tabanlı UI desteği  
 - 🖥️ Basit HTML kullanıcı arayüzü  
 - ✅ Pytest ile test edilmiş modüller  
+<img width="2875" height="1403" alt="ui_library" src="https://github.com/user-attachments/assets/4ffeacfb-17ad-4320-9651-a75d440121cd" />
 
 ---
 
@@ -46,7 +47,8 @@ python main.py
 uvicorn api:app --reload
 ```
 - Ana sayfa (HTML UI): http://127.0.0.1:8000/
-- Swagger UI: http://127.0.0.1:8000/docs
+- Swagger UI: http://127.0.0.1:8000/docs<img width="2878" height="1405" alt="barcode reader" src="https://github.com/user-attachments/assets/45ada6fc-0ec3-4ac8-a6bf-5f217e21e0e9" />
+
 - Health Check: http://127.0.0.1:8000/health
 
 ### Endpointler
@@ -67,3 +69,5 @@ python -m pytest -q tests
 
 Bu proje, Python OOP mantığıyla hazırlanmış bir kütüphane yönetim sistemi sunar. Hem CLI hem API üzerinden kullanılabilir, JSON tabanlı kalıcı veri saklar ve testlerle desteklenmiştir. Yazılım geliştirme öğrenenler için hem nesne yönelimli programlama, hem de API geliştirme konularında pratik bir örnek niteliği taşır.
 ---
+
+<img width="2878" height="1405" alt="barcode reader" src="https://github.com/user-attachments/assets/05958e33-e04c-4c2a-845f-beab8c4839c3" />
