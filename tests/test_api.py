@@ -44,3 +44,36 @@ def test_api_create_and_delete(monkeypatch, tmp_path):
     assert resp.status_code == 204
 
 
+def test_api_create_not_found(monkeypatch, tmp_path):
+    # isolate storage
+    lib.storage_path = str(tmp_path / "library.json")
+    lib._books = []
+    lib.save_books()
+
+    # make add_book_by_isbn raise ValueError (simulating 404 from Open Library)
+    def raise_not_found(self, isbn, client):
+        raise ValueError("Kitap bulunamadı")
+
+    monkeypatch.setattr(type(lib), "add_book_by_isbn", raise_not_found)
+
+    resp = client.post("/books", json={"isbn": "0000000000"})
+    assert resp.status_code == 404
+    assert resp.json()["detail"] == "Kitap bulunamadı"
+
+
+def test_api_create_network_error(monkeypatch, tmp_path):
+    # isolate storage
+    lib.storage_path = str(tmp_path / "library.json")
+    lib._books = []
+    lib.save_books()
+
+    # make add_book_by_isbn raise a generic exception (simulating network/runtime error)
+    def raise_runtime(self, isbn, client):
+        raise RuntimeError("Ağ hatası: timeout")
+
+    monkeypatch.setattr(type(lib), "add_book_by_isbn", raise_runtime)
+
+    resp = client.post("/books", json={"isbn": "0000000000"})
+    assert resp.status_code == 400
+    assert "Ağ hatası" in resp.json()["detail"]
+
