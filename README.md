@@ -47,8 +47,7 @@ python main.py
 uvicorn api:app --reload
 ```
 - Ana sayfa (HTML UI): http://127.0.0.1:8000/
-- Swagger UI: http://127.0.0.1:8000/docs<img width="2878" height="1405" alt="barcode reader" src="https://github.com/user-attachments/assets/45ada6fc-0ec3-4ac8-a6bf-5f217e21e0e9" />
-
+- Swagger UI: http://127.0.0.1:8000/docs
 - Health Check: http://127.0.0.1:8000/health
 
 ### Endpointler
