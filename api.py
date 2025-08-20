@@ -5,7 +5,9 @@ GET /books, POST /books, DELETE /books/{isbn}
 from __future__ import annotations
 
 from fastapi import FastAPI, HTTPException, status
+from fastapi.responses import FileResponse
 from pydantic import BaseModel
+from pathlib import Path
 
 from library import Library, Book
 from open_library import OpenLibraryClient
@@ -15,10 +17,14 @@ app = FastAPI(title="Library API", version="1.0.0")
 lib = Library()
 client = OpenLibraryClient()
 
+BASE_DIR = Path(__file__).resolve().parent
+UI_INDEX = BASE_DIR / "ui" / "index.html"
+
 
 @app.get("/")
 def root():
-    return {"message": "Library API running", "endpoints": ["GET /books", "POST /books", "DELETE /books/{isbn}", "GET /docs"]}
+    # Basit HTML arayüzünü servis et
+    return FileResponse(UI_INDEX)
 
 
 @app.get("/health")
@@ -58,5 +64,21 @@ def delete_book(isbn: str):
     if not ok:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Kitap bulunamadı")
     return None
+
+
+class ISBNListBody(BaseModel):
+    isbns: list[str]
+
+
+@app.delete("/books", status_code=status.HTTP_200_OK)
+def delete_books(body: ISBNListBody):
+    not_found: list[str] = []
+    deleted: list[str] = []
+    for isbn in body.isbns:
+        if lib.remove_book(isbn):
+            deleted.append(isbn)
+        else:
+            not_found.append(isbn)
+    return {"deleted": deleted, "not_found": not_found}
 
 
