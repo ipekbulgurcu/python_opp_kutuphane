@@ -3,9 +3,9 @@
 Bu proje, **Python ile Nesne Yönelimli Programlama (OOP)** mantığı kullanılarak geliştirilmiş, basit ve işlevsel bir **kütüphane yönetim uygulamasıdır**. Uygulama, hem terminal üzerinden (CLI) hem de **FastAPI tabanlı bir REST API** üzerinden kullanılabilir. Ek olarak, kullanıcı dostu bir **HTML arayüzü** ve **Pytest ile yazılmış kapsamlı testler** içermektedir.
 
 -----
-\<br\>
+\
 \<img width="2875" height="1403" alt="ui_library" src="https://github.com/user-attachments/assets/2d836a40-3588-4d93-8229-4dd843b8b2de" />
-\<br\>
+\
 
 ## 🚀 Özellikler
 
@@ -18,9 +18,9 @@ Bu proje, **Python ile Nesne Yönelimli Programlama (OOP)** mantığı kullanıl
   - **Basit ve Kullanışlı HTML Arayüzü:** FastAPI'nin sunduğu basit HTML arayüzü, terminal kullanmak istemeyenler için görsel bir yönetim paneli sağlar.
   - **Pytest ile Kapsamlı Testler:** Projenin sağlamlığını ve güvenilirliğini garanti altına almak için, hem OOP sınıfları hem de API endpointleri için Pytest ile yazılmış testler bulunmaktadır.
 
-\<br\>
+\
 \<img width="2878" height="1405" alt="barcode reader" src="https://github.com/user-attachments/assets/ea20d6f8-4647-4c27-88c1-40d6914662be" />
-\<br\>
+\
 
 -----
 
@@ -97,9 +97,6 @@ HTML arayüzü, `ui/index.html` dosyası üzerinden sunulur ve aşağıdaki işl
       - Tablodan birden fazla kitap seçerek "Seçiliyi Sil" butonu ile toplu silme işlemi gerçekleştirebilirsiniz.
       - "Hepsini seç" onay kutusu ile listedeki tüm kitapları seçebilirsiniz.
 
-\<br\>
-\<img src="http://googleusercontent.com/file_content/1" alt="barcode reader" width="800"/\>
-\<br\>
 
 -----
 
