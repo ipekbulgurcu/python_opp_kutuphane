@@ -49,7 +49,22 @@ class ISBNBody(BaseModel):
 
 @app.get("/books", response_model=list[BookModel])
 def list_books():
-    return [BookModel(title=b.title, author=b.author, isbn=b.isbn, created_at=b.created_at, genres=b.genres) for b in lib.list_books()]
+    models: list[BookModel] = []
+    for b in lib.list_books():
+        created = getattr(b, "created_at", None)
+        genres = getattr(b, "genres", None)
+        if genres is not None and not isinstance(genres, list):
+            genres = None
+        models.append(
+            BookModel(
+                title=b.title,
+                author=b.author,
+                isbn=b.isbn,
+                created_at=created,
+                genres=genres,
+            )
+        )
+    return models
 
 
 @app.post("/books", response_model=BookModel, status_code=status.HTTP_201_CREATED)
