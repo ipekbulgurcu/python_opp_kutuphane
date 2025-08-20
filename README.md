@@ -1,29 +1,39 @@
-﻿# Kütüphane Uygulaması (CLI + FastAPI)
+# 📚 Python OOP Kütüphane Uygulaması
 
-English version is below.
+Bu proje, **Python ile Nesne Yönelimli Programlama** mantığını kullanarak hazırlanmış basit bir **kütüphane yönetim uygulamasıdır**. Uygulama hem terminal üzerinden (CLI) hem de **FastAPI tabanlı REST API** üzerinden kullanılabilir. Ayrıca FastAPI tarafından sunulan basit bir **HTML arayüzü** ve **Pytest ile yazılmış testler** bulunmaktadır.
 
-## Genel Bakış (TR)
-Basit bir kütüphane uygulaması. Aşağıdakileri içerir:
-- Python ile Nesne Yönelimli Programlama (CLI)
-- JSON kalıcılık ile FastAPI backend
-- FastAPI tarafından servis edilen basit HTML arayüz
-- Pytest tabanlı testler
+---
 
-## Gereksinimler
-- Python 3.9+
+## 🚀 Özellikler
+- 📖 Kitap ekleme, listeleme ve silme işlemleri  
+- 📂 JSON dosyası üzerinden kalıcı veri saklama  
+- 🌐 FastAPI tabanlı REST API ve Swagger UI desteği  
+- 🖥️ Basit HTML kullanıcı arayüzü  
+- ✅ Pytest ile test edilmiş modüller  
 
-Bağımlılıkları kurun:
+---
+
+## 🔧 Gereksinimler
+- Python 3.9 veya üzeri  
+- Gerekli bağımlılıkları yüklemek için:
 ```bash
 pip install -r requirements.txt
-```
+
+
 
 ## Proje Yapısı
-- `library.py`: OOP alanı (`Book`, `Library`)
-- `open_library.py`: Open Library istemcisi (httpx)
-- `main.py`: CLI uygulaması
-- `api.py`: FastAPI uygulaması
-- `ui/index.html`: Basit HTML arayüz
-- `tests/`: Pytest testleri
+python_opp_kutuphane/
+├── api.py             # FastAPI uygulaması
+├── library.py         # OOP sınıfları (Book, Library)
+├── main.py            # CLI uygulaması
+├── open_library.py    # Open Library API entegrasyonu
+├── run_api.py         # API başlatma betiği
+├── library.json       # Kitap verilerinin saklandığı dosya
+├── ui/index.html      # Basit HTML arayüz
+├── tests/             # Pytest test dosyaları
+├── requirements.txt   # Bağımlılıklar
+└── API_KULLANIM_KILAVUZU.md
+
 
 ## CLI Çalıştırma
 ```bash
@@ -37,67 +47,23 @@ uvicorn api:app --reload
 ```
 - Ana sayfa (HTML UI): http://127.0.0.1:8000/
 - Swagger UI: http://127.0.0.1:8000/docs
-- Sağlık: http://127.0.0.1:8000/health
+- Health Check: http://127.0.0.1:8000/health
 
 ### Endpointler
 - GET `/books` → Tüm kitapları listeler
-- POST `/books` → Gövde: `{ "isbn": "9789754341966" }` (Open Library’den başlık/yazar alınır)
-- DELETE `/books/{isbn}` → ISBN’e göre siler
-- DELETE `/books` → Gövde: `{ "isbns": ["...", "..."] }` toplu silme
+- POST `/books` → ISBN ile kitap ekle: `{ "isbn": "9789754341966" }` (Open Library’den başlık/yazar alınır)
+- DELETE `/books/{isbn}` → ISBN’e göre siler (Tek bir kitabı sil)
+- DELETE `/books` → Gövde: `{ "isbns": ["...", "..."] }` toplu (Birden fazla kitabı toplu sil)
 
 ### Testler
 ```bash
 python -m pytest -q tests
-```
 
+-test_library.py: OOP yapısını test eder
+-test_api_endpoints.py: API endpointlerini test eder
+-test_main.py: CLI işlevlerini test eder
+```
+📖 Özet
+
+Bu proje, Python OOP mantığıyla hazırlanmış bir kütüphane yönetim sistemi sunar. Hem CLI hem API üzerinden kullanılabilir, JSON tabanlı kalıcı veri saklar ve testlerle desteklenmiştir. Yazılım geliştirme öğrenenler için hem nesne yönelimli programlama, hem de API geliştirme konularında pratik bir örnek niteliği taşır.
 ---
-
-# Library App (CLI + FastAPI)
-
-## Overview (EN)
-A simple library application including:
-- Object-Oriented Programming in Python (CLI)
-- A FastAPI backend with JSON persistence
-- A minimal HTML UI served by FastAPI
-- Pytest-based tests
-
-## Requirements
-- Python 3.9+
-
-Install dependencies:
-```bash
-pip install -r requirements.txt
-```
-
-## Project Structure
-- `library.py`: OOP domain (`Book`, `Library`)
-- `open_library.py`: Open Library client (httpx)
-- `main.py`: CLI app
-- `api.py`: FastAPI app
-- `ui/index.html`: Simple HTML UI
-- `tests/`: Pytest tests
-
-## Run CLI
-```bash
-python main.py
-```
-- Data is persisted to `library.json` in the same folder.
-
-## Run API
-```bash
-uvicorn api:app --reload
-```
-- Home (HTML UI): http://127.0.0.1:8000/
-- Swagger UI: http://127.0.0.1:8000/docs
-- Health: http://127.0.0.1:8000/health
-
-### Endpoints
-- GET `/books` → List all books
-- POST `/books` → Body: `{ "isbn": "9789754341966" }` (fetches title/author from Open Library)
-- DELETE `/books/{isbn}` → Delete by ISBN
-- DELETE `/books` → Body: `{ "isbns": ["...", "..."] }` bulk delete
-
-### Tests
-```bash
-python -m pytest -q tests
-```
