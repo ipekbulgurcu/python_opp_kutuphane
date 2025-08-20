@@ -3,5 +3,3 @@ uvicorn[standard]==0.24.0
 httpx==0.25.2
 pytest==7.4.3
 pydantic==2.5.0
-slowapi==0.1.9
-
