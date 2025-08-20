@@ -1,7 +1,30 @@
 [
   {
+    "title": "Çok Gezenti - Boş Dünya",
+    "author": "Burak Akkul",
+    "isbn": "9789753141345",
+    "created_at": null,
+    "genres": []
+  },
+  {
+    "title": "Suluboya Sanati",
+    "author": "Burhan Ozer",
+    "isbn": "9786050201802",
+    "created_at": null,
+    "genres": []
+  },
+  {
     "title": "DUYGUSAL ZEKA (Turkish Edition)",
     "author": "Kolektif",
-    "isbn": "9789754341966"
+    "isbn": "9789754341966",
+    "created_at": null,
+    "genres": []
+  },
+  {
+    "title": "Sanat 101",
+    "author": "Eric Grzymkowski",
+    "isbn": "9786050204322",
+    "created_at": "2025-08-20T14:00:36.925168+00:00",
+    "genres": []
   }
 ]

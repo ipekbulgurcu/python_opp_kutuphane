@@ -8,9 +8,10 @@ from __future__ import annotations
 
 import json
 import os
-from dataclasses import dataclass, asdict
+from dataclasses import dataclass, asdict, field
 from typing import List, Optional, Tuple
 from storage import Storage, JsonFileStorage
+from datetime import datetime, timezone
 
 
 @dataclass
@@ -22,6 +23,8 @@ class LibraryItem:
 @dataclass
 class Book(LibraryItem):
     isbn: str
+    created_at: Optional[str] = None  # ISO 8601
+    genres: List[str] = field(default_factory=list)
 
     def __str__(self) -> str:
         return f"{self.title} by {self.author} (ISBN: {self.isbn})"
@@ -83,7 +86,16 @@ class Library:
         title = info["title"]
         authors: List[str] = info.get("authors", [])
         author = ", ".join(authors) if authors else "Unknown"
-        book = Book(title=title, author=author, isbn=isbn)
+        subjects: List[str] = []
+        raw_subj = info.get("subjects")
+        if isinstance(raw_subj, list):
+            for s in raw_subj:
+                if isinstance(s, str):
+                    subjects.append(s)
+                elif isinstance(s, dict) and "name" in s and isinstance(s["name"], str):
+                    subjects.append(s["name"]) 
+        created_at = datetime.now(timezone.utc).isoformat()
+        book = Book(title=title, author=author, isbn=isbn, created_at=created_at, genres=subjects)
         self.add_book(book)
         return book
 

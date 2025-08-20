@@ -5,6 +5,7 @@ Uses httpx to fetch book details by ISBN.
 from __future__ import annotations
 
 import httpx
+import re
 
 
 class OpenLibraryClient:
@@ -13,8 +14,25 @@ class OpenLibraryClient:
     def __init__(self, timeout_seconds: float = 10.0):
         self._timeout = timeout_seconds
 
+    @staticmethod
+    def normalize_isbn_or_barcode(code: str) -> str:
+        """Normalize scanned barcode/ISBN to a valid ISBN-10 or ISBN-13 string.
+
+        - Accepts EAN-13 starting with 978/979 (Bookland), returns as-is (13 digits)
+        - Accepts 10-digit ISBN, returns as-is
+        - Strips non-digit/X characters; raises ValueError otherwise
+        """
+        raw = str(code or "")
+        digits = re.sub(r"[^0-9Xx]", "", raw)
+        if len(digits) == 13 and (digits.startswith("978") or digits.startswith("979")):
+            return digits
+        if len(digits) == 10:
+            return digits
+        raise ValueError("Geçersiz ISBN/Barkod")
+
     def fetch_by_isbn(self, isbn: str) -> dict:
-        url = f"{self.BASE_URL}/isbn/{isbn}.json"
+        norm = self.normalize_isbn_or_barcode(isbn)
+        url = f"{self.BASE_URL}/isbn/{norm}.json"
         try:
             # Bazı ISBN uçları 302 ile /books/.. kaynağına yönlendirir.
             # Yönlendirmeleri takip ederek nihai JSON'u al.

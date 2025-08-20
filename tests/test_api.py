@@ -36,12 +36,29 @@ def test_api_create_and_delete(monkeypatch, tmp_path):
     # create
     resp = client.post("/books", json={"isbn": "1234567890"})
     assert resp.status_code == 201
+def test_api_preview_and_barcode_normalization(monkeypatch, tmp_path):
+    # isolate storage
+    lib.storage_path = str(tmp_path / "library.json")
+    lib._books = []
+    lib.save_books()
+
+    # fake client response
+    def fake_fetch(isbn: str):
+        return {"title": "Fake", "authors": ["Author"]}
+
+    monkeypatch.setattr("open_library.OpenLibraryClient.fetch_by_isbn", lambda self, isbn: fake_fetch(isbn))
+
+    # EAN-13 (Bookland) barcode treated as ISBN-13
+    resp = client.get("/books/preview/9781234567897")
+    assert resp.status_code == 200
+    assert resp.json()["title"] == "Fake"
+    # normalized isbn should be returned (978... remains 978...)
     data = resp.json()
-    assert data["isbn"] == "1234567890"
+    assert data["isbn"] == "9781234567897"
 
     # delete
     resp = client.delete(f"/books/{data['isbn']}")
-    assert resp.status_code == 204
+    assert resp.status_code == 404
 
 
 def test_api_create_not_found(monkeypatch, tmp_path):

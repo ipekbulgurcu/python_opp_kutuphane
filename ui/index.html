@@ -106,13 +106,42 @@
       .success { color: var(--success); margin-top: 8px; }
 
       .footer { text-align: center; margin-top: 24px; color: var(--muted); font-size: 12px; }
+
+      /* Modal (Barcode Scanner) */
+      .modal-backdrop {
+        position: fixed; inset: 0; background: rgba(0,0,0,0.6); display: none;
+        align-items: center; justify-content: center; z-index: 1000;
+      }
+      .modal {
+        width: min(92vw, 720px); background: var(--card); border: 1px solid var(--border);
+        border-radius: 14px; padding: 16px; box-shadow: var(--shadow);
+      }
+      .modal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+      .modal-title { font-size: 18px; }
+      .modal-actions { display: flex; gap: 8px; }
+      .modal-body { display: grid; gap: 10px; }
+      .row-inline { display: flex; gap: 8px; align-items: center; }
+      select { padding: 8px 10px; border-radius: 10px; border: 1px solid var(--border); background: transparent; color: var(--text); }
+      video { width: 100%; border-radius: 10px; background: #000; }
+      .hidden { display: none; }
+      .video-wrap { position: relative; }
+      .guide {
+        position: absolute; inset: 0; display: grid; place-items: center; pointer-events: none;
+      }
+      .guide-rect {
+        width: min(80%, 480px); height: 160px; border: 3px solid rgba(255,255,255,0.85);
+        box-shadow: 0 0 0 9999px rgba(0,0,0,0.35) inset; border-radius: 12px;
+      }
+      .code-badge { position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.6); color: #fff; padding: 6px 10px; border-radius: 8px; font-size: 13px; }
+      .preview-card { border: 1px solid var(--border); border-radius: 10px; padding: 10px; background: var(--card); display: none; }
+      .preview-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 8px; }
     </style>
   </head>
   <body>
     <div class="hero">
       <div class="container">
         <h1>📚 Kütüphane</h1>
-        <div class="subtitle">ISBN ile hızlı ekle, listeden yönet. Renkli ve modern arayüz.</div>
+        <div class="subtitle">ISBN ile hızlı ekle, listeden yönet. by İpek Bulgurcu</div>
       </div>
     </div>
 
@@ -124,14 +153,22 @@
             <input id="isbnInput" placeholder="ISBN girin (örn. 9789754341966)" />
             <button id="addBtn" class="btn btn-primary">➕ Ekle</button>
             <button id="refreshBtn" class="btn btn-outline">↻ Yenile</button>
+            <button id="scanBtn" class="btn btn-outline">📷 Barkod Tara</button>
           </div>
           <div id="message" class="muted" style="margin-top:8px">ISBN ile ekle: Sunucu Open Library'den başlık/yazar bilgilerini alır.</div>
         </div>
 
         <div class="card">
-          <div class="row" style="justify-content: space-between; align-items: center; margin-bottom: 8px;">
-            <div class="row">
+          <div class="row" style="justify-content: space-between; align-items: center; margin-bottom: 8px; gap:12px;">
+            <div class="row" style="flex-wrap: wrap; gap:8px;">
               <button id="deleteSelectedBtn" class="btn btn-danger">🗑️ Seçiliyi Sil</button>
+              <input id="searchInput" placeholder="Ara (başlık, yazar, ISBN)" style="min-width: 240px;" />
+              <select id="sortSelect">
+                <option value="title_asc">Başlık (A → Z)</option>
+                <option value="title_desc">Başlık (Z → A)</option>
+                <option value="author_asc">Yazar (A → Z)</option>
+                <option value="author_desc">Yazar (Z → A)</option>
+              </select>
             </div>
             <div class="muted"><input type="checkbox" id="selectAllChk" /> Hepsini seç</div>
           </div>
@@ -153,6 +190,40 @@
       <div class="footer">API: <code>GET /books</code> · <code>POST /books</code> · <code>DELETE /books/{isbn}</code></div>
     </div>
 
+    <!-- Scanner Modal -->
+    <div id="scannerBackdrop" class="modal-backdrop">
+      <div class="modal">
+        <div class="modal-header">
+          <div class="modal-title">📷 Barkod Tarayıcı</div>
+          <div class="modal-actions">
+            <button id="closeScannerBtn" class="btn btn-outline">Kapat</button>
+          </div>
+        </div>
+        <div class="modal-body">
+          <div class="muted">Kameraya erişim izni verin. Adres çubuğundaki kamera ikonundan “İzin ver” seçin. ISBN barkodunu (EAN‑13) kameraya gösterin.</div>
+          <div class="row-inline">
+            <label for="cameraSelect" class="muted">Kamera:</label>
+            <select id="cameraSelect"></select>
+          </div>
+          <div class="video-wrap">
+            <video id="scannerVideo" autoplay playsinline muted></video>
+            <div class="guide">
+              <div class="guide-rect"></div>
+              <div id="codeBadge" class="code-badge hidden"></div>
+            </div>
+          </div>
+          <div id="scannerInfo" class="muted"></div>
+          <div id="previewCard" class="preview-card">
+            <div id="previewText"></div>
+            <div class="preview-actions">
+              <button id="confirmAddBtn" class="btn btn-primary">Ekle</button>
+              <button id="cancelAddBtn" class="btn btn-outline">İptal</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <script>
       const booksBody = document.getElementById('booksBody');
       const isbnInput = document.getElementById('isbnInput');
@@ -161,6 +232,23 @@
       const messageEl = document.getElementById('message');
       const deleteSelectedBtn = document.getElementById('deleteSelectedBtn');
       const selectAllChk = document.getElementById('selectAllChk');
+      const scanBtn = document.getElementById('scanBtn');
+      const scannerBackdrop = document.getElementById('scannerBackdrop');
+      const closeScannerBtn = document.getElementById('closeScannerBtn');
+      const scannerVideo = document.getElementById('scannerVideo');
+      const scannerInfo = document.getElementById('scannerInfo');
+      let mediaStream = null;
+      let scanning = false;
+      let detectedOnce = false;
+      const cameraSelect = document.getElementById('cameraSelect');
+      let lastDetectedIsbn = '';
+      const codeBadge = document.getElementById('codeBadge');
+      const previewCard = document.getElementById('previewCard');
+      const previewText = document.getElementById('previewText');
+      const confirmAddBtn = document.getElementById('confirmAddBtn');
+      const cancelAddBtn = document.getElementById('cancelAddBtn');
+      let usingZXing = false;
+      let zxingReader = null;
 
       function setMessage(text, kind = 'info') {
         messageEl.textContent = text;
@@ -180,7 +268,27 @@
         }
       }
 
-      function renderBooks(books) {
+      function filteredAndSortedBooks(allBooks) {
+        const q = (document.getElementById('searchInput').value || '').toLowerCase();
+        const sort = document.getElementById('sortSelect').value;
+        let arr = allBooks.slice();
+        if (q) {
+          arr = arr.filter(b =>
+            (b.title || '').toLowerCase().includes(q) ||
+            (b.author || '').toLowerCase().includes(q) ||
+            (b.isbn || '').toLowerCase().includes(q)
+          );
+        }
+        const cmpStr = (a,b) => a.localeCompare(b, 'tr', { sensitivity: 'base' });
+        if (sort === 'title_asc') arr.sort((a,b)=> cmpStr(a.title||'', b.title||''));
+        else if (sort === 'title_desc') arr.sort((a,b)=> cmpStr(b.title||'', a.title||''));
+        else if (sort === 'author_asc') arr.sort((a,b)=> cmpStr(a.author||'', b.author||''));
+        else if (sort === 'author_desc') arr.sort((a,b)=> cmpStr(b.author||'', a.author||''));
+        return arr;
+      }
+
+      function renderBooks(allBooks) {
+        const books = filteredAndSortedBooks(allBooks);
         booksBody.innerHTML = '';
         if (!books || books.length === 0) {
           const tr = document.createElement('tr');
@@ -292,6 +400,110 @@
         }
       }
 
+      // ===== Barcode Scanner (BarcodeDetector API) =====
+      function openScannerModal() {
+        scannerBackdrop.style.display = 'flex';
+        scannerInfo.textContent = '';
+        detectedOnce = false;
+        ensurePermissionThenInit();
+      }
+
+      function closeScannerModal() {
+        scannerBackdrop.style.display = 'none';
+        stopScanner();
+      }
+
+      async function ensurePermissionThenInit() {
+        try {
+          // Prompt permission early so we can read device labels
+          await navigator.mediaDevices.getUserMedia({ video: true });
+        } catch (e) {
+          // ignore; user may allow on next attempt
+        }
+        await listCameras();
+        await startScanner();
+      }
+
+      async function listCameras() {
+        try {
+          const devices = await navigator.mediaDevices.enumerateDevices();
+          const cams = devices.filter(d => d.kind === 'videoinput');
+          cameraSelect.innerHTML = '';
+          for (const cam of cams) {
+            const opt = document.createElement('option');
+            opt.value = cam.deviceId;
+            opt.textContent = cam.label || `Kamera ${cameraSelect.length + 1}`;
+            cameraSelect.appendChild(opt);
+          }
+        } catch (e) {
+          // best effort
+        }
+      }
+
+      function buildConstraints() {
+        const selected = cameraSelect && cameraSelect.value ? cameraSelect.value : null;
+        if (selected) {
+          return { video: { deviceId: { exact: selected } } };
+        }
+        return { video: { facingMode: { ideal: 'environment' } } };
+      }
+
+      async function startScanner() {
+        try {
+          if (!('BarcodeDetector' in window)) {
+            // Fallback: ZXing kütüphanesini dinamik yükle ve taramayı başlat
+            usingZXing = true;
+            await startZXing();
+            return;
+          }
+
+          let constraints = buildConstraints();
+          try {
+            mediaStream = await navigator.mediaDevices.getUserMedia(constraints);
+          } catch (e) {
+            // fallback to any camera
+            constraints = { video: true };
+            mediaStream = await navigator.mediaDevices.getUserMedia(constraints);
+          }
+          scannerVideo.srcObject = mediaStream;
+          await scannerVideo.play();
+
+          const detector = new BarcodeDetector({ formats: ['ean_13', 'ean_8', 'upc_a', 'upc_e', 'code_128', 'itf'] });
+          scanning = true;
+
+          async function tick() {
+            if (!scanning) return;
+            try {
+              const codes = await detector.detect(scannerVideo);
+              if (codes && codes.length > 0 && !detectedOnce) {
+                detectedOnce = true;
+                const raw = (codes[0].rawValue || '').toString();
+                const digits = raw.replace(/[^0-9Xx]/g, '');
+                onCodeDetected(digits);
+              }
+            } catch (e) {
+              // sessizce ilerle
+            }
+            requestAnimationFrame(tick);
+          }
+          requestAnimationFrame(tick);
+        } catch (err) {
+          scannerInfo.textContent = 'Kameraya erişilemedi: ' + (err && err.message ? err.message : err);
+        }
+      }
+
+      function stopScanner() {
+        scanning = false;
+        if (mediaStream) {
+          mediaStream.getTracks().forEach(t => t.stop());
+          mediaStream = null;
+        }
+        scannerVideo.srcObject = null;
+        if (usingZXing && zxingReader) {
+          try { zxingReader.reset(); } catch (_) {}
+        }
+      }
+
       addBtn.addEventListener('click', addBook);
       refreshBtn.addEventListener('click', fetchBooks);
       deleteSelectedBtn.addEventListener('click', deleteSelected);
@@ -300,7 +512,87 @@
         document.querySelectorAll('.rowChk').forEach(chk => { chk.checked = checked; });
         syncHeaderCheckbox();
       });
+      scanBtn.addEventListener('click', openScannerModal);
+      closeScannerBtn.addEventListener('click', closeScannerModal);
+      cameraSelect.addEventListener('change', async () => { stopScanner(); await startScanner(); });
+      scannerBackdrop.addEventListener('click', (e) => { if (e.target === scannerBackdrop) closeScannerModal(); });
       window.addEventListener('DOMContentLoaded', fetchBooks);
+      document.getElementById('searchInput').addEventListener('input', async ()=>{ try{ const res=await fetch('/books'); renderBooks(await res.json()); }catch{}});
+      document.getElementById('sortSelect').addEventListener('change', async ()=>{ try{ const res=await fetch('/books'); renderBooks(await res.json()); }catch{}});
+
+      // ===== ZXing fallback (dynamic loader) =====
+      function loadZXing() {
+        return new Promise((resolve, reject) => {
+          if (window.ZXing) { resolve(); return; }
+          const s = document.createElement('script');
+          s.src = 'https://unpkg.com/@zxing/library@0.20.0/umd/index.min.js';
+          s.onload = () => resolve();
+          s.onerror = () => reject(new Error('ZXing yüklenemedi'));
+          document.head.appendChild(s);
+        });
+      }
+
+      async function startZXing() {
+        try {
+          await loadZXing();
+          const ZX = window.ZXing;
+          zxingReader = new ZX.BrowserMultiFormatReader();
+          const deviceId = cameraSelect && cameraSelect.value ? cameraSelect.value : undefined;
+          scanning = true;
+          await zxingReader.decodeFromVideoDevice(
+            deviceId,
+            scannerVideo,
+            (result, err) => {
+              if (!scanning) return;
+              if (result && !detectedOnce) {
+                detectedOnce = true;
+                const text = (result.text) ? result.text : (result.getText ? result.getText() : '');
+                const digits = String(text).replace(/[^0-9Xx]/g, '');
+                onCodeDetected(digits);
+              }
+            }
+          );
+        } catch (e) {
+          scannerInfo.textContent = 'ZXing başlatılamadı: ' + (e && e.message ? e.message : e);
+        }
+      }
+
+      // Confirm / Cancel handlers for preview add
+      confirmAddBtn.addEventListener('click', async () => {
+        if (!lastDetectedIsbn) return;
+        isbnInput.value = lastDetectedIsbn;
+        try {
+          await addBook();
+          previewCard.style.display = 'none';
+          codeBadge.classList.add('hidden');
+          closeScannerModal();
+        } catch (_) {}
+      });
+      cancelAddBtn.addEventListener('click', () => {
+        previewCard.style.display = 'none';
+        codeBadge.classList.add('hidden');
+        detectedOnce = false; // yeniden denemeye izin ver
+        scannerInfo.textContent = 'Tekrar deneyin.';
+      });
+
+      async function onCodeDetected(digits) {
+        codeBadge.classList.remove('hidden');
+        codeBadge.textContent = `Kod: ${digits}`;
+        if (digits.length < 10) return;
+        lastDetectedIsbn = digits;
+        scannerInfo.textContent = 'Önizleme getiriliyor...';
+        try {
+          const res = await fetch(`/books/preview/${encodeURIComponent(digits)}`);
+          if (!res.ok) throw new Error('Önizleme alınamadı');
+          const book = await res.json();
+          previewText.textContent = `${book.title} — ${book.author} (ISBN: ${book.isbn})`;
+          previewCard.style.display = 'block';
+          scannerInfo.textContent = 'Onaylarsanız eklenecek.';
+        } catch (e) {
+          previewCard.style.display = 'none';
+          scannerInfo.textContent = 'Hata: ' + (e && e.message ? e.message : e);
+        }
+      }
     </script>
   </body>
 </html>
