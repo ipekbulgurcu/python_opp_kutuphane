@@ -16,9 +16,6 @@ Bu proje, **Python ile Nesne Yönelimli Programlama (OOP)** mantığı kullanıl
   - **Basit ve Kullanışlı HTML Arayüzü:** FastAPI'nin sunduğu basit HTML arayüzü, terminal kullanmak istemeyenler için görsel bir yönetim paneli sağlar.
   - **Pytest ile Kapsamlı Testler:** Projenin sağlamlığını ve güvenilirliğini garanti altına almak için, hem OOP sınıfları hem de API endpointleri için Pytest ile yazılmış testler bulunmaktadır.
 
-\
-\<img width="2878" height="1405" alt="barcode reader" src="https://github.com/user-attachments/assets/ea20d6f8-4647-4c27-88c1-40d6914662be" />
-\
 
 -----
 
