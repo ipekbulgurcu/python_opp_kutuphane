@@ -3,9 +3,7 @@
 Bu proje, **Python ile Nesne Yönelimli Programlama (OOP)** mantığı kullanılarak geliştirilmiş, basit ve işlevsel bir **kütüphane yönetim uygulamasıdır**. Uygulama, hem terminal üzerinden (CLI) hem de **FastAPI tabanlı bir REST API** üzerinden kullanılabilir. Ek olarak, kullanıcı dostu bir **HTML arayüzü** ve **Pytest ile yazılmış kapsamlı testler** içermektedir.
 
 -----
-\
-\<img width="2875" height="1403" alt="ui_library" src="https://github.com/user-attachments/assets/2d836a40-3588-4d93-8229-4dd843b8b2de" />
-\
+
 
 ## 🚀 Özellikler
 
@@ -99,6 +97,8 @@ HTML arayüzü, `ui/index.html` dosyası üzerinden sunulur ve aşağıdaki işl
 
 
 -----
+<img width="2875" height="1403" alt="ui_library" src="https://github.com/user-attachments/assets/d4b83a57-1a93-41be-8580-9384bc7d4f75" />
+<img width="2878" height="1405" alt="barcode reader" src="https://github.com/user-attachments/assets/df9fa7e8-1774-4430-89b8-0eb3c8cccce6" />
 
 ## 🧪 Testler
 
