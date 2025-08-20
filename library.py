@@ -9,13 +9,18 @@ from __future__ import annotations
 import json
 import os
 from dataclasses import dataclass, asdict
-from typing import List, Optional
+from typing import List, Optional, Tuple
+from storage import Storage, JsonFileStorage
 
 
 @dataclass
-class Book:
+class LibraryItem:
     title: str
     author: str
+
+
+@dataclass
+class Book(LibraryItem):
     isbn: str
 
     def __str__(self) -> str:
@@ -23,8 +28,9 @@ class Book:
 
 
 class Library:
-    def __init__(self, storage_path: str = "library.json"):
+    def __init__(self, storage_path: str = "library.json", storage: Optional[Storage] = None):
         self.storage_path = storage_path
+        self.storage: Storage = storage or JsonFileStorage(storage_path)
         self._books: List[Book] = []
         self.load_books()
 
@@ -43,6 +49,17 @@ class Library:
                 return True
         return False
 
+    def remove_books(self, isbns: List[str]) -> Tuple[List[str], List[str]]:
+        """Remove multiple books by ISBN. Returns (deleted, not_found)."""
+        deleted: List[str] = []
+        not_found: List[str] = []
+        for isbn in isbns:
+            if self.remove_book(isbn):
+                deleted.append(isbn)
+            else:
+                not_found.append(isbn)
+        return deleted, not_found
+
     def list_books(self) -> List[Book]:
         return list(self._books)
 
@@ -53,21 +70,12 @@ class Library:
         return None
 
     def load_books(self) -> None:
-        if not os.path.exists(self.storage_path):
-            self._books = []
-            return
-        try:
-            with open(self.storage_path, "r", encoding="utf-8") as f:
-                raw = json.load(f)
-            self._books = [Book(**item) for item in raw]
-        except Exception:
-            # Bozuk dosya durumunda sıfırdan başla
-            self._books = []
+        raw = self.storage.read()
+        self._books = [Book(**item) for item in raw]
 
     def save_books(self) -> None:
         data = [asdict(b) for b in self._books]
-        with open(self.storage_path, "w", encoding="utf-8") as f:
-            json.dump(data, f, ensure_ascii=False, indent=2)
+        self.storage.write(data)
 
     # Aşama 2
     def add_book_by_isbn(self, isbn: str, client: "OpenLibraryClient") -> Book:

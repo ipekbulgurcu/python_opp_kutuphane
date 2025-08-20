@@ -14,7 +14,8 @@ def print_menu() -> None:
     print("2. Kitap Sil")
     print("3. Kitapları Listele")
     print("4. Kitap Ara (ISBN)")
-    print("5. Çıkış")
+    print("5. Çoklu Sil (virgülle ISBN girin)")
+    print("6. Çıkış")
 
 
 def main() -> None:
@@ -43,6 +44,11 @@ def main() -> None:
             b = lib.find_book(isbn)
             print(b if b else "Bulunamadı")
         elif choice == "5":
+            raw = input("Silinecek ISBN'ler (virgülle): ").strip()
+            isbns = [s.strip() for s in raw.split(",") if s.strip()]
+            deleted, not_found = lib.remove_books(isbns)
+            print(f"Silindi: {len(deleted)}, Bulunamadı: {len(not_found)}")
+        elif choice == "6":
             print("Çıkılıyor...")
             break
         else:

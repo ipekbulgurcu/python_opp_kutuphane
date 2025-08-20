@@ -21,6 +21,8 @@ BASE_DIR = Path(__file__).resolve().parent
 UI_INDEX = BASE_DIR / "ui" / "index.html"
 
 
+## CORS kaldırıldı. UI aynı origin'den servis ediliyor.
+
 @app.get("/")
 def root():
     # Basit HTML arayüzünü servis et
@@ -72,13 +74,7 @@ class ISBNListBody(BaseModel):
 
 @app.delete("/books", status_code=status.HTTP_200_OK)
 def delete_books(body: ISBNListBody):
-    not_found: list[str] = []
-    deleted: list[str] = []
-    for isbn in body.isbns:
-        if lib.remove_book(isbn):
-            deleted.append(isbn)
-        else:
-            not_found.append(isbn)
+    deleted, not_found = lib.remove_books(body.isbns)
     return {"deleted": deleted, "not_found": not_found}
 
 

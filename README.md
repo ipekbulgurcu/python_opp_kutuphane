@@ -1,4 +1,4 @@
-# Kütüphane Uygulaması (CLI + FastAPI)
+﻿# Kütüphane Uygulaması (CLI + FastAPI)
 
 English version is below.
 
