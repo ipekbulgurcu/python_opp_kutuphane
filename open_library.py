@@ -1,11 +1,15 @@
 """Open Library API client (Aşama 2)
 Uses httpx to fetch book details by ISBN.
+Includes barcode scanning capability.
 """
 
 from __future__ import annotations
 
 import httpx
 import re
+import cv2
+from typing import Optional
+from .barcode_scanner import BarcodeScanner
 
 
 class OpenLibraryClient:
@@ -13,6 +17,34 @@ class OpenLibraryClient:
 
     def __init__(self, timeout_seconds: float = 10.0):
         self._timeout = timeout_seconds
+        self._scanner = None
+
+    def scan_isbn(self) -> Optional[str]:
+        """Scan ISBN/barcode using camera"""
+        if not self._scanner:
+            self._scanner = BarcodeScanner()
+        
+        if not self._scanner.start_camera():
+            raise RuntimeError("Could not start camera")
+            
+        try:
+            print("Barkodu taramak için kamerayı barkoda tutun. Çıkmak için 'q' tuşuna basın.")
+            while True:
+                result = self._scanner.scan_barcode()
+                if result:
+                    code, type_ = result
+                    try:
+                        return self.normalize_isbn_or_barcode(code)
+                    except ValueError:
+                        print(f"Geçersiz barkod formatı: {code}")
+                        continue
+                        
+                if cv2.waitKey(1) & 0xFF == ord('q'):
+                    break
+        finally:
+            self._scanner.stop_camera()
+            
+        return None
 
     @staticmethod
     def normalize_isbn_or_barcode(code: str) -> str:
@@ -30,6 +62,24 @@ class OpenLibraryClient:
             return digits
         raise ValueError("Geçersiz ISBN/Barkod")
 
+    @staticmethod
+    def isbn13_to_isbn10(isbn13: str) -> str:
+        digits = re.sub(r"[^0-9]", "", isbn13)
+        if len(digits) != 13 or not digits.startswith("978"):
+            raise ValueError("ISBN13 dönüştürülemez")
+        core = digits[3:12]  # 9 hanesi
+        total = 0
+        for i, ch in enumerate(core):
+            total += (10 - i) * int(ch)
+        remainder = 11 - (total % 11)
+        if remainder == 10:
+            check = "X"
+        elif remainder == 11:
+            check = "0"
+        else:
+            check = str(remainder)
+        return core + check
+
     def fetch_by_isbn(self, isbn: str) -> dict:
         norm = self.normalize_isbn_or_barcode(isbn)
         url = f"{self.BASE_URL}/isbn/{norm}.json"
@@ -37,6 +87,11 @@ class OpenLibraryClient:
             # Bazı ISBN uçları 302 ile /books/.. kaynağına yönlendirir.
             # Yönlendirmeleri takip ederek nihai JSON'u al.
             resp = httpx.get(url, timeout=self._timeout, follow_redirects=True)
+            if resp.status_code == 404 and len(norm) == 13 and norm.startswith("978"):
+                # Bir de ISBN-10 olarak dene
+                alt = self.isbn13_to_isbn10(norm)
+                url10 = f"{self.BASE_URL}/isbn/{alt}.json"
+                resp = httpx.get(url10, timeout=self._timeout, follow_redirects=True)
             if resp.status_code == 404:
                 raise ValueError("Kitap bulunamadı")
             resp.raise_for_status()
