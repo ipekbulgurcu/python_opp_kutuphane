@@ -1,15 +1,11 @@
 """Open Library API client (Aşama 2)
 Uses httpx to fetch book details by ISBN.
-Includes barcode scanning capability.
 """
 
 from __future__ import annotations
 
 import httpx
 import re
-import cv2
-from typing import Optional
-from .barcode_scanner import BarcodeScanner
 
 
 class OpenLibraryClient:
@@ -17,34 +13,6 @@ class OpenLibraryClient:
 
     def __init__(self, timeout_seconds: float = 10.0):
         self._timeout = timeout_seconds
-        self._scanner = None
-
-    def scan_isbn(self) -> Optional[str]:
-        """Scan ISBN/barcode using camera"""
-        if not self._scanner:
-            self._scanner = BarcodeScanner()
-        
-        if not self._scanner.start_camera():
-            raise RuntimeError("Could not start camera")
-            
-        try:
-            print("Barkodu taramak için kamerayı barkoda tutun. Çıkmak için 'q' tuşuna basın.")
-            while True:
-                result = self._scanner.scan_barcode()
-                if result:
-                    code, type_ = result
-                    try:
-                        return self.normalize_isbn_or_barcode(code)
-                    except ValueError:
-                        print(f"Geçersiz barkod formatı: {code}")
-                        continue
-                        
-                if cv2.waitKey(1) & 0xFF == ord('q'):
-                    break
-        finally:
-            self._scanner.stop_camera()
-            
-        return None
 
     @staticmethod
     def normalize_isbn_or_barcode(code: str) -> str:
